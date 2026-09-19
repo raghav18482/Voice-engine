@@ -1,0 +1,12 @@
+[
+  {"id": "R2-SAVER-E", "retailer": "Retailer 2", "name": "Saver", "fuel": "electricity", "states": ["NSW","ACT","VIC","QLD","SA"], "elec_c_kwh": 28.9, "supply_c_day": 98.0, "pct_below_reference": 14},
+  {"id": "R1-FLEX-E", "retailer": "Retailer 1", "name": "Flex", "fuel": "electricity", "states": ["NSW","ACT","VIC","QLD","SA","TAS"], "elec_c_kwh": 30.4, "supply_c_day": 92.5, "pct_below_reference": 11},
+  {"id": "R3-BASIC-E", "retailer": "Retailer 3", "name": "Basic", "fuel": "electricity", "states": ["NSW","VIC","QLD","SA"], "elec_c_kwh": 31.9, "supply_c_day": 88.0, "pct_below_reference": 8},
+  {"id": "R1-HOME-E", "retailer": "Retailer 1", "name": "Home Plus", "fuel": "electricity", "states": ["NSW","VIC","QLD"], "elec_c_kwh": 33.5, "supply_c_day": 85.0, "pct_below_reference": 3},
+  {"id": "R2-SAVER-G", "retailer": "Retailer 2", "name": "Gas Saver", "fuel": "gas", "states": ["NSW","ACT","VIC","SA"], "gas_c_mj": 3.9, "gas_supply_c_day": 75.0, "pct_below_reference": 12},
+  {"id": "R3-GAS-G", "retailer": "Retailer 3", "name": "Gas Basic", "fuel": "gas", "states": ["NSW","VIC","QLD","SA"], "gas_c_mj": 4.2, "gas_supply_c_day": 70.0, "pct_below_reference": 9},
+  {"id": "R1-GAS-G", "retailer": "Retailer 1", "name": "Gas Flex", "fuel": "gas", "states": ["NSW","VIC"], "gas_c_mj": 4.4, "gas_supply_c_day": 68.0, "pct_below_reference": 6},
+  {"id": "R2-DUAL", "retailer": "Retailer 2", "name": "Dual Saver", "fuel": "both", "states": ["NSW","ACT","VIC","SA"], "elec_c_kwh": 29.1, "supply_c_day": 97.0, "gas_c_mj": 3.9, "gas_supply_c_day": 75.0, "pct_below_reference": 13},
+  {"id": "R1-DUAL", "retailer": "Retailer 1", "name": "Dual Flex", "fuel": "both", "states": ["NSW","ACT","VIC","QLD","SA"], "elec_c_kwh": 30.6, "supply_c_day": 92.0, "gas_c_mj": 4.3, "gas_supply_c_day": 69.0, "pct_below_reference": 10},
+  {"id": "R3-DUAL", "retailer": "Retailer 3", "name": "Dual Basic", "fuel": "both", "states": ["NSW","VIC","QLD","SA"], "elec_c_kwh": 32.0, "supply_c_day": 88.0, "gas_c_mj": 4.2, "gas_supply_c_day": 70.0, "pct_below_reference": 7}
+]

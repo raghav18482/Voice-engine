@@ -1,0 +1,196 @@
+# Energy dropout-recovery script — the single source of truth for what the agent says and collects.
+# Lines marked "verbatim" are compliance lines: the engine speaks them exactly as written.
+version: energy-v1.0
+agent_name: Ava
+brand: Econnex
+
+lines:
+  opening: "Hi {first_name}, this is {agent_name}, an automated assistant from {brand}, calling about the energy comparison you started with us."
+  consent: "Before we go any further, this call is recorded for quality and training purposes. Is that okay with you?"   # verbatim
+  consent_reask: "Sorry, just to check. Are you okay with this call being recorded? A yes or no is fine."
+  no_consent: "No problem at all. I can't continue without recording, so I'll leave it there. You can finish your comparison online any time. Have a great day."
+  intro: "Thanks. You started comparing energy plans with us and got partway through. Have you got about five minutes to finish it now?"
+  intro_reask: "Would you like to finish your energy comparison now? It takes about five minutes."
+  resume: "Great. I've already got what you entered online, so we'll pick up from there."
+  busy: "No problem at all. When would be a better time for us to call you back?"
+  callback_booked: "Thanks, I've noted a callback for {when}. Everything you've told me is saved, so we'll pick up right where we left off. Bye for now."
+  decline: "No worries at all, thanks for your time. I've noted that, and we won't call you about this comparison again. Have a great day."
+  opt_out: "Understood. I've removed your number from our call list. Sorry for the trouble, and have a good day."
+  wait: "Sure, take your time."
+  payment_boundary: "Just so you know, I can't take any card or bank details on this call. Once you've signed up, your new retailer sends you a secure link to set up payment."
+  no_advice: "I'm not able to recommend a plan, but I can read the details of each option again so you can compare them yourself."
+  off_script: "That's a good question. I've noted it so a specialist can follow up with you."
+  offer_human: "Sorry, I'm having trouble getting that. Would you like me to put you through to a colleague, or shall we try once more?"
+  try_again: "No problem, let's try once more."
+  handoff: "I understand. I'm bringing in a colleague now. They can see everything we've covered, so you won't need to repeat anything. One moment please."
+  handoff_hold: "Your colleague will be with you in just a moment."
+  handoff_timeout: "I'm sorry, my colleagues are all on calls right now. I've booked a priority callback, and they'll have everything we've covered. Thanks for your patience, bye for now."
+  human_greeting: "Hi {first_name}, this is {agent}. I can see everything so far, so no need to repeat anything. Let me sort this out for you."
+  ineligible_wa: "Thanks. Households in Western Australia can't choose their electricity retailer, so there aren't plans I can offer you today. Thanks for your time, and have a great day."
+  plan_intro: "Based on what you've told me, here are the three lowest priced {fuel_label} plans in your area."
+  plan_ask: "Which option would you like: one, two or three? I can also repeat them."
+  eic: "Before I submit, I need your explicit informed consent. You're agreeing to switch the {fuel_label} at {service_address} to the {plan_name} plan with {retailer}. {rates_sentence} There are no exit fees, and you have a ten business day cooling-off period. {retailer} will email you the full plan terms. Do you agree to go ahead? Please say yes or no."   # verbatim
+  eic_reask: "Sorry, I need a clear yes or no to go ahead. Do you agree to switch to this plan?"
+  eic_declined: "No problem, nothing has been submitted. Would you like a colleague to talk it through with you?"
+  eic_declined_end: "Okay, I've saved your details and nothing has been submitted. You can finish online any time. Thanks for your time."
+  submitted: "All done. Your reference number is {ref_spoken}. {retailer} will email your welcome pack and set up payment with you directly. Thanks {first_name}, have a great day."
+
+faq:
+  - id: identity
+    patterns: ["who is this", "who are you", "where are you calling from", "who's calling", "what company"]
+    answer: "I'm {agent_name}, an automated assistant from {brand}, the energy comparison service you used online."
+  - id: is_ai
+    patterns: ["are you a robot", "are you a bot", "are you real", "are you human", "are you a real person", "is this a robot", "am i talking to a robot", "are you ai", "is this ai", "are you a computer"]
+    answer: "I'm an automated assistant. If you'd prefer a person at any time, just say so and I'll put you through."
+  - id: number_source
+    patterns: ["how did you get my number", "where did you get my number", "why are you calling"]
+    answer: "You entered your number on our website when you started comparing energy plans, so we're following up to help you finish."
+  - id: cost
+    patterns: ["does it cost", "is there a fee", "cost to switch", "fee to switch", "charge me for this"]
+    answer: "There's no charge for using our comparison service. Plan fees are in the details I'll read out."
+
+sections:
+  - id: eligibility
+    title: Eligibility
+    intro: "First, a couple of quick questions about the property."
+    fields:
+      - key: property_type
+        label: Property type
+        type: enum
+        options:
+          residential: [home, house, residential, apartment, unit, flat, townhouse, "where i live", "my place", personal]
+          business: [business, commercial, shop, office, company, work, warehouse]
+        ask: "Is this for your home, or for a business?"
+        reask: "Is the property your home, or a business?"
+        on_value:
+          business: {action: handoff, signal: off_script, reason: "Business customer, outside the AI agent's scope"}
+      - key: move_in_or_switch
+        label: Moving or switching
+        type: enum
+        options:
+          moving: [moving, "move in", "moving in", "new place", "just moved", "new home", "new house", relocating, "moving house"]
+          switching: [switch, switching, change, changing, "better deal", cheaper, staying, "same place", "current address", "compare", comparing]
+        ask: "Are you moving into a new place, or switching retailers at your current address?"
+        reask: "Is this for a move to a new address, or a switch where you live now?"
+      - key: postcode
+        label: Postcode
+        type: postcode
+        critical: true
+        ask: "What's the postcode of the property?"
+        reask: "Could you tell me the four digit postcode again?"
+        readback: "That's postcode {spoken}. Is that right?"
+      - key: embedded_network
+        label: Embedded network
+        type: yes_no
+        ask: "Do you buy your electricity through your building or complex, rather than directly from a retailer?"
+        reask: "Does your building or complex supply your electricity? Yes or no is fine."
+        on_value:
+          "yes": {action: handoff, signal: sensitive, reason: "Embedded network: switching needs a specialist check"}
+
+  - id: property
+    title: Energy details
+    intro: "Now a few quick questions about your energy."
+    fields:
+      - key: fuel_type
+        label: Fuel type
+        type: enum
+        options:
+          both: [both, dual, "electricity and gas", "gas and electricity", "power and gas", "gas and power"]
+          electricity: [electricity, electric, power, "just power"]
+          gas: [gas]
+        ask: "Are you comparing electricity, gas, or both?"
+        reask: "Is that for electricity, gas, or both?"
+      - key: current_retailer
+        label: Current retailer
+        type: retailer
+        condition: {field: move_in_or_switch, equals: switching}
+        ask: "Who's your current energy retailer?"
+        reask: "Which company sends your energy bill at the moment?"
+      - key: solar
+        label: Solar panels
+        type: yes_no
+        ask: "Do you have solar panels at the property?"
+        reask: "Are there solar panels at the property? Yes or no."
+      - key: life_support
+        label: Life support
+        type: yes_no
+        flag_if: "yes"
+        ask: "Does anyone at the property rely on life support equipment that uses electricity?"
+        reask: "Is there any life support equipment at the property? Yes or no."
+      - key: concession
+        label: Concession card
+        type: yes_no
+        ask: "Does anyone at the property hold a concession card, like a pension or health care card?"
+        reask: "Do you have a concession card? Yes or no."
+
+  - id: usage
+    title: Usage
+    fields:
+      - key: bill_amount
+        label: Last bill amount
+        type: money
+        optional: true
+        ask: "Roughly how much was your last energy bill? An estimate is fine, or you can say skip."
+        reask: "About how much was your last bill, in dollars? Or say skip."
+
+  - id: plan
+    title: Plan choice
+    type: plan
+    fields:
+      - key: selected_plan
+        label: Selected plan
+        type: plan
+
+  - id: personal
+    title: Your details
+    intro: "Great. Now I just need to confirm your details for the application."
+    fields:
+      - key: full_name
+        label: Full name
+        type: full_name
+        critical: true
+        ask: "Could I get your first and last name, as it appears on your ID?"
+        reask: "Sorry, could you say your first and last name again?"
+        readback: "I've got {spoken}. Is that right?"
+      - key: dob
+        label: Date of birth
+        type: dob
+        critical: true
+        ask: "What's your date of birth?"
+        reask: "Could you give me your date of birth as day, month and year?"
+        readback: "Date of birth {spoken}. Is that correct?"
+      - key: email
+        label: Email
+        type: email
+        critical: true
+        ask: "What's the best email address for your welcome pack? Please spell it out."
+        ask_prefilled: "I have your email as {spoken}. Is that still right?"
+        reask: "Could you spell your email address for me, letter by letter?"
+        readback: "Just to confirm, that's {spoken}. Is that right?"
+      - key: mobile
+        label: Mobile
+        type: mobile
+        critical: true
+        ask: "What's your mobile number?"
+        reask: "Could you say your mobile number again, one digit at a time?"
+        readback: "That's {spoken}. Is that right?"
+      - key: service_address
+        label: Service address
+        type: address
+        critical: true
+        ask: "What's the full address where you need the energy connected?"
+        reask: "Could you give me the street number, street name and suburb?"
+        readback: "The address is {spoken}. Is that correct?"
+      - key: move_in_date
+        label: Move-in date
+        type: future_date
+        critical: true
+        condition: {field: move_in_or_switch, equals: moving}
+        ask: "What date do you move in?"
+        reask: "What date should the energy be connected from?"
+        readback: "Connection from {spoken}. Is that right?"
+
+  - id: confirm
+    title: Consent and submit
+    type: eic
+    fields: []
