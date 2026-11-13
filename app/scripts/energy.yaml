@@ -6,10 +6,12 @@ brand: Econnex
 
 lines:
   opening: "Hi {first_name}, this is {agent_name}, an automated assistant from {brand}, calling about the energy comparison you started with us."
+  opening_inbound: "Hi {first_name}, thanks for calling {brand}. This is {agent_name}, an automated assistant."
   consent: "Before we go any further, this call is recorded for quality and training purposes. Is that okay with you?"   # verbatim
   consent_reask: "Sorry, just to check. Are you okay with this call being recorded? A yes or no is fine."
   no_consent: "No problem at all. I can't continue without recording, so I'll leave it there. You can finish your comparison online any time. Have a great day."
   intro: "Thanks. You started comparing energy plans with us and got partway through. Have you got about five minutes to finish it now?"
+  intro_inbound: "Thanks. I can help you compare energy plans and sign up over the phone. Have you got about five minutes now?"
   intro_reask: "Would you like to finish your energy comparison now? It takes about five minutes."
   resume: "Great. I've already got what you entered online, so we'll pick up from there."
   busy: "No problem at all. When would be a better time for us to call you back?"

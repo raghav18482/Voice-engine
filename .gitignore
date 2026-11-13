@@ -60,3 +60,5 @@ data/calls/*.json
 *.db
 *.sqlite
 *.sqlite3
+data/dial_attempts.json
+data/leads.local.json

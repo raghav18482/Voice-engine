@@ -405,9 +405,27 @@ python -m uvicorn app.main:app --reload
 ```
 
 ### Production
+Call state (`SESSIONS`, `CUSTOMER_WS`, `CONSOLES`) lives in process memory, and the
+live call and agent console features talk over WebSockets — so this must run as a
+**single process/worker**. Do not use `-w 4` or multiple instances behind a
+load balancer as-is; a request could land on a worker that never saw the call start.
 ```bash
-gunicorn -w 4 -k uvicorn.workers.UvicornWorker app.main:app
+uvicorn app.main:app --host 0.0.0.0 --port $PORT
 ```
+
+Also **not** deployable as-is on serverless platforms (Vercel, AWS Lambda, etc.):
+they don't support long-lived WebSocket connections or persistent in-memory state
+between invocations. Use a host that runs a persistent process — see Render below,
+or Fly.io/Railway/a plain VM.
+
+### Render
+A [`render.yaml`](../render.yaml) blueprint is included at the repo root. In the
+Render dashboard: New → Blueprint → pick this repo → it reads `render.yaml`
+automatically (root dir `backend`, single instance, free plan). Fill in
+`OPENAI_API_KEY`/`ANTHROPIC_API_KEY`/`SANDBOX_URL`/`SANDBOX_TOKEN` in the dashboard
+if you use them (left blank = rules-only agent, mock sandbox). Once deployed, point
+the frontend at it by setting `VITE_API_BASE_URL=https://<your-service>.onrender.com`
+(see `frontend/.env.example`).
 
 ### Docker
 ```dockerfile

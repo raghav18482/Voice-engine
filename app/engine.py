@@ -66,8 +66,12 @@ def now_iso() -> str:
 
 class CallSession:
     def __init__(self, lead: dict, script: Optional[dict] = None, *, use_llm: bool = True,
-                 simulated: bool = False, today: Optional[date] = None):
+                 simulated: bool = False, today: Optional[date] = None,
+                 direction: str = "outbound", channel: str = "browser"):
         self.id = uuid.uuid4().hex[:8]
+        self.direction = direction  # outbound (we call them) | inbound (they rang the Twilio number)
+        self.channel = channel  # browser | phone
+        self.call_sid: Optional[str] = None
         self.lead = copy.deepcopy(lead)
         self.script = script or load_script()
         self.use_llm = use_llm and llm.provider() is not None
@@ -118,7 +122,10 @@ class CallSession:
         base = {"first_name": self.lead.get("first_name", "there"), "agent_name": self.script["agent_name"],
                 "brand": self.script["brand"]}
         base.update(kw)
-        return self.script["lines"][key].format(**base)
+        lines = self.script["lines"]
+        if self.direction == "inbound" and f"{key}_inbound" in lines:
+            key = f"{key}_inbound"
+        return lines[key].format(**base)
 
     def say(self, text: str, speaker: str = "ai", prompt: bool = False):
         text = " ".join(text.split())
@@ -732,4 +739,5 @@ class CallSession:
                 "escalation": {"score": self.escalation.score, "events": self.escalation.events[-10:]},
                 "handoff": self.handoff, "card": self.card(), "human_agent": self.human_agent,
                 "submission": self.submission, "metrics": self.metrics(), "script_version": self.script["version"],
-                "llm": self.use_llm, "started_at": self.started_at, "simulated": self.simulated}
+                "llm": self.use_llm, "started_at": self.started_at, "simulated": self.simulated,
+                "direction": self.direction, "channel": self.channel, "call_sid": self.call_sid}
